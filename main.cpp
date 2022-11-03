@@ -13,16 +13,18 @@ typedef struct Node
 typedef enum type_obj_tree { OBJ_LEFT, OBJ_RIGHT} OBJ_TYPE;
 
 Node* addElement(Node* &root, string animalLeft, OBJ_TYPE type);
-Node* inputSave(Node* &root);
+void outputSave(Node* root, ofstream &of);
+void inputSave(Node* &root, ifstream &f);
 bool getAnswer();
 void game(Node* root);
 
 int main()
 {
     Node* root = NULL;
-    addElement(root, "Это домашнее животное??", OBJ_LEFT);
-    addElement(root, "кошка", OBJ_LEFT);
-    addElement(root, "волк", OBJ_RIGHT);
+    ifstream file;
+
+    file.open("save.txt");
+    inputSave(root, file);
 
     int ex = 0;
     while (ex == 0)
@@ -33,7 +35,10 @@ int main()
         cout << "0 - да" << endl;
         cout << "любая другая цифра - нет" << endl;
         cin >> ex;
-    }   
+    }  
+    ofstream of;
+    of.open("save.txt");
+    outputSave(root, of);
 }
 
 bool getAnswer()
@@ -98,6 +103,7 @@ void game(Node *root)
             else
             {
                 cout << "Ура, победа" << endl;
+                cout << "____________________________" << endl;
                 break;
             }
         }
@@ -122,34 +128,42 @@ void game(Node *root)
                 cout << "Пожалуйста, ввдеите животное, которое загадали" << endl;
 
                 getline(cin, animal);
+                animal = "Это " + animal + "?";
                 
                 temp = root->data;
                 root->data = question;
 
                 addElement(root, animal, OBJ_LEFT);
                 addElement(root, temp, OBJ_RIGHT);
+                cout << "____________________________" << endl;
                 break;
             }
         }
     }
 }
 
-Node* inputSave(Node* &root)
+void inputSave(Node* &root, ifstream &file)
 {
-    ifstream file;
-    file.open("save.txt");
-    if (file.is_open())
+    string temp;
+    if (!getline(file, temp) || temp == "")
     {
-        cout << "Сохранение загружено" << endl;
-        cout << "_______________________________" << endl;
-
-        int i = 0;
-        while (!file.eof())
-        {
-            string temp;
-            getline(file, temp);
-            
-        }
-        file.close();
+        return;
     }
+
+    addElement(root, temp, OBJ_LEFT);
+    inputSave(root->l, file);
+    inputSave(root->r, file);
+}
+
+void outputSave(Node* root, ofstream &of)
+{
+    if (root == NULL)
+    {
+        of << "" << endl;
+        return;
+    }
+
+    of << root->data << endl;
+    outputSave(root->l, of);
+    outputSave(root->r, of);
 }
